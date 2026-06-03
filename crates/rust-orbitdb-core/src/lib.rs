@@ -6,6 +6,7 @@
 
 use cid::multibase::Base;
 use cid::Cid;
+use ipld_core::ipld::Ipld;
 use k256::ecdsa::signature::Verifier;
 use k256::ecdsa::{Signature, VerifyingKey};
 use multihash::Multihash;
@@ -37,7 +38,7 @@ pub struct Entry {
     pub next: Vec<String>,
     pub refs: Vec<String>,
     pub clock: Clock,
-    pub payload: String,
+    pub payload: Ipld,
     pub identity: String,
 }
 
@@ -51,7 +52,7 @@ struct SignedEntry<'a> {
     next: &'a [String],
     refs: &'a [String],
     clock: &'a Clock,
-    payload: &'a str,
+    payload: &'a Ipld,
 }
 
 #[derive(Debug, thiserror::Error)]
