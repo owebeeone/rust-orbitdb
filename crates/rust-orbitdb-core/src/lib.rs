@@ -14,6 +14,9 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::cmp::Ordering;
 
+mod store;
+pub use store::{EntryStore, MemoryStore};
+
 /// dag-cbor codec code.
 const DAG_CBOR: u64 = 0x71;
 /// sha2-256 multihash code.
@@ -185,7 +188,7 @@ pub struct Log {
     identity_hash: String,
     signing_key: Vec<u8>,
     heads: Vec<Entry>,
-    entries: std::collections::HashMap<String, Entry>,
+    store: Box<dyn EntryStore>,
 }
 
 impl Log {
@@ -202,7 +205,26 @@ impl Log {
             identity_hash: identity_hash.into(),
             signing_key,
             heads: Vec::new(),
-            entries: std::collections::HashMap::new(),
+            store: Box::new(MemoryStore::new()),
+        }
+    }
+
+    /// Creates an empty log backed by a caller-supplied entry store (e.g. a
+    /// crash-injecting store for fault tests).
+    pub fn with_store(
+        id: impl Into<String>,
+        public_key: impl Into<String>,
+        identity_hash: impl Into<String>,
+        signing_key: Vec<u8>,
+        store: Box<dyn EntryStore>,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            public_key: public_key.into(),
+            identity_hash: identity_hash.into(),
+            signing_key,
+            heads: Vec::new(),
+            store,
         }
     }
 
@@ -313,8 +335,8 @@ impl Log {
             for h in &to_fetch {
                 if !traversed.contains(h) && !fetched.contains(h) {
                     fetched.insert(h.clone());
-                    if let Some(e) = self.entries.get(h) {
-                        nexts.push(e.clone());
+                    if let Some(e) = self.store.get(h) {
+                        nexts.push(e);
                     }
                 }
             }
@@ -353,7 +375,7 @@ impl Log {
     /// covered by its `next`, then add it if not already a head.
     fn add_head(&mut self, entry: Entry) -> Result<(), EntryError> {
         let entry_cid = entry.cid()?;
-        self.entries.insert(entry_cid.clone(), entry.clone());
+        self.store.put(&entry_cid, entry.clone());
         let covered: std::collections::HashSet<&String> = entry.next.iter().collect();
         let mut kept = Vec::new();
         for h in &self.heads {
