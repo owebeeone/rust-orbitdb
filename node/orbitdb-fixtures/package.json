@@ -1,0 +1,17 @@
+{
+  "name": "orbitdb-fixtures",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic JS OrbitDB fixture generator (oracle) for rust-orbitdb conformance tests. Pins @orbitdb/core to the vendored version.",
+  "scripts": {
+    "generate": "node generate.mjs"
+  },
+  "dependencies": {
+    "@ipld/dag-cbor": "^9.2.5",
+    "@libp2p/crypto": "^5.1.14",
+    "@orbitdb/core": "4.0.0",
+    "it-drain": "^3.0.12",
+    "multiformats": "^13.4.2"
+  }
+}
