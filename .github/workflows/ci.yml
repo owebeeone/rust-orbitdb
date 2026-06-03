@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      # Installs the toolchain + components pinned in rust-toolchain.toml.
+      - run: rustup show
+      - name: fmt
+        run: cargo fmt --all --check
+      - name: clippy (no default features)
+        run: cargo clippy --workspace --all-targets --no-default-features -- -D warnings
+      - name: clippy (all features)
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - name: test (no default features)
+        run: cargo test --workspace --no-default-features
+      - name: test
+        run: cargo test --workspace
+      - uses: taiki-e/install-action@nextest
+      - name: nextest
+        run: cargo nextest run --workspace

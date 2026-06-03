@@ -1,5 +1,19 @@
-# Virtual workspace. Member crates are added starting in P00c
-# (workspace-ci-skeleton). See GLP-0003 plan in the parent glial-dev repo.
+# Virtual workspace. Member crates are added from P01/P02 onward
+# (fixtures, testkit, core, ...). See GLP-0003 plan in the parent glial-dev repo.
 [workspace]
 resolver = "2"
 members = []
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.95.0"
+repository = "https://github.com/owebeeone/rust-orbitdb"
+
+# Shared lint policy. Member crates opt in with `[lints] workspace = true`.
+# Semantic crates additionally declare `#![forbid(unsafe_code)]` per
+# RustRepoBestPractices.
+[workspace.lints.rust]
+unsafe_code = "warn"
+
+[workspace.lints.clippy]
+all = "warn"
