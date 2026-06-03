@@ -1,0 +1,5 @@
+# Virtual workspace. Member crates are added starting in P00c
+# (workspace-ci-skeleton). See GLP-0003 plan in the parent glial-dev repo.
+[workspace]
+resolver = "2"
+members = []
