@@ -1,0 +1,56 @@
+[
+  {
+    "description": "join/concurrent: A and B diverge, A joins B, then converge",
+    "logId": "log-mw",
+    "writerA": {
+      "key": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+      "identityHash": "zdpuAwt3ATk7Gooo7dgdbL1VAPffDPtowjdCRwrmMBzXzQLhr",
+      "innerPrivateKeyHex": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+    },
+    "writerB": {
+      "key": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27",
+      "identityHash": "zdpuAxAMTp2N2rut4i3Tfx6BqBCTLsS68xqLzvSGFZ5WPZVy4",
+      "innerPrivateKeyHex": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    "ea": {
+      "payload": "from-A",
+      "cid": "zdpuAq776z8gKEvUBRqQLaZBZPnUvfnr6hSdUMeHdBzYyKTwF",
+      "next": [],
+      "refs": [],
+      "clock": {
+        "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+        "time": 1
+      }
+    },
+    "eb": {
+      "payload": "from-B",
+      "cid": "zdpuAyghfBg3MvtYGhxKC4FAfxqAMKr2qxwZ6mq2QeYZCbxif",
+      "next": [],
+      "refs": [],
+      "clock": {
+        "id": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27",
+        "time": 1
+      }
+    },
+    "headsAfterJoin": [
+      "zdpuAq776z8gKEvUBRqQLaZBZPnUvfnr6hSdUMeHdBzYyKTwF",
+      "zdpuAyghfBg3MvtYGhxKC4FAfxqAMKr2qxwZ6mq2QeYZCbxif"
+    ],
+    "ec": {
+      "payload": "converge",
+      "cid": "zdpuAsUj5Vr6wqCMEqBnt8j7gzFoRikQunDh5hFREhse3ReoB",
+      "next": [
+        "zdpuAq776z8gKEvUBRqQLaZBZPnUvfnr6hSdUMeHdBzYyKTwF",
+        "zdpuAyghfBg3MvtYGhxKC4FAfxqAMKr2qxwZ6mq2QeYZCbxif"
+      ],
+      "refs": [],
+      "clock": {
+        "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+        "time": 2
+      }
+    },
+    "headsAfterConverge": [
+      "zdpuAsUj5Vr6wqCMEqBnt8j7gzFoRikQunDh5hFREhse3ReoB"
+    ]
+  }
+]

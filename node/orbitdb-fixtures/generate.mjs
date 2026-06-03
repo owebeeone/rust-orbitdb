@@ -22,17 +22,33 @@ const hex = (u8) => u8ToString(u8, 'hex')
 //   getId('userA') -> base16(pubkey of key['userA']) == P1
 //   the identity's signing key is then keyed under P1.
 // Both must be seeded with fixed scalars for reproducible identities/signatures.
-const fixedPrivOuter = hexToBytes('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef')
-const fixedPrivInner = hexToBytes('fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210')
-const id = 'userA'
 const logId = 'log-1'
 
 const keystore = await KeyStore({ storage: await MemoryStorage() })
-await keystore.addKey(id, { privateKey: fixedPrivOuter })
-const p1 = u8ToString(privateKeyFromRaw(fixedPrivOuter).publicKey.raw, 'base16')
-await keystore.addKey(p1, { privateKey: fixedPrivInner })
 const identities = await Identities({ keystore })
-const identity = await identities.createIdentity({ id })
+
+async function makeIdentity(idName, outerHex, innerHex) {
+  await keystore.addKey(idName, { privateKey: hexToBytes(outerHex) })
+  const p1 = u8ToString(privateKeyFromRaw(hexToBytes(outerHex)).publicKey.raw, 'base16')
+  await keystore.addKey(p1, { privateKey: hexToBytes(innerHex) })
+  const identity = await identities.createIdentity({ id: idName })
+  return { identity, innerHex }
+}
+
+const A = await makeIdentity(
+  'userA',
+  '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+  'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210'
+)
+const B = await makeIdentity(
+  'userB',
+  '1111111111111111111111111111111111111111111111111111111111111111',
+  '2222222222222222222222222222222222222222222222222222222222222222'
+)
+// Backwards-compatible bindings used by the single-writer cases/logs below.
+const identity = A.identity
+const fixedPrivInner = hexToBytes(A.innerHex)
+const id = 'userA'
 
 // Build one fixture case from an entry's inputs.
 async function makeCase(description, payload, { time = 0, next = [], refs = [] } = {}) {
@@ -138,8 +154,41 @@ async function makeLog(description, payloads) {
 
 const logs = [await makeLog('log/linear-append: a,b,c,d', ['a', 'b', 'c', 'd'])]
 
+// Multi-writer join oracle: two writers append concurrently to the same logId
+// (both at time 1, next []), A joins B (concurrent heads), then A appends a
+// converging entry whose next covers both heads.
+function entryRec(e) {
+  return { payload: e.payload, cid: e.hash, next: e.next, refs: e.refs, clock: e.clock }
+}
+async function makeJoin(description) {
+  const logA = await Log(A.identity, { logId: 'log-mw' })
+  const logB = await Log(B.identity, { logId: 'log-mw' })
+  const ea = await logA.append('from-A')
+  const eb = await logB.append('from-B')
+  await logA.join(logB)
+  const headsAfterJoin = (await logA.heads()).map((h) => h.hash)
+  const ec = await logA.append('converge')
+  const headsAfterConverge = (await logA.heads()).map((h) => h.hash)
+  return {
+    description,
+    logId: 'log-mw',
+    writerA: { key: A.identity.publicKey, identityHash: A.identity.hash, innerPrivateKeyHex: A.innerHex },
+    writerB: { key: B.identity.publicKey, identityHash: B.identity.hash, innerPrivateKeyHex: B.innerHex },
+    ea: entryRec(ea),
+    eb: entryRec(eb),
+    headsAfterJoin,
+    ec: entryRec(ec),
+    headsAfterConverge,
+  }
+}
+
+const joins = [await makeJoin('join/concurrent: A and B diverge, A joins B, then converge')]
+
 const outDir = new URL('./corpus/', import.meta.url)
 writeFileSync(new URL('entries.json', outDir), JSON.stringify(cases, null, 2) + '\n')
 writeFileSync(new URL('clocks.json', outDir), JSON.stringify(clocks, null, 2) + '\n')
 writeFileSync(new URL('logs.json', outDir), JSON.stringify(logs, null, 2) + '\n')
-console.error(`wrote ${cases.length} entry cases, ${clocks.length} clock cases, ${logs.length} logs`)
+writeFileSync(new URL('joins.json', outDir), JSON.stringify(joins, null, 2) + '\n')
+console.error(
+  `wrote ${cases.length} entry cases, ${clocks.length} clock cases, ${logs.length} logs, ${joins.length} joins`
+)

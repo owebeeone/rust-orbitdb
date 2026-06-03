@@ -234,17 +234,40 @@ impl Log {
         };
         let signed = entry.signed_bytes()?;
         entry.sig = sign_secp256k1(&self.signing_key, &signed)?;
+        self.add_head(entry.clone())?;
+        Ok(entry)
+    }
 
-        // New heads = entries not covered by `next`, plus the new entry.
-        let covered: std::collections::HashSet<&String> = next.iter().collect();
+    /// Joins a single entry produced elsewhere (a concurrent writer): verifies
+    /// its signature, then merges it into the heads. Concurrent entries that do
+    /// not cover each other both remain heads. Note: this assumes the entry's
+    /// causal dependencies are already present (shallow join); deep history
+    /// traversal arrives with refs/traverse.
+    pub fn join_entry(&mut self, entry: Entry) -> Result<(), EntryError> {
+        if !entry.verify_signature()? {
+            return Err(EntryError::Signature);
+        }
+        self.add_head(entry)
+    }
+
+    /// Head-set update shared by append and join: drop heads covered by the
+    /// entry's `next`, then add the entry if not already a head.
+    fn add_head(&mut self, entry: Entry) -> Result<(), EntryError> {
+        let covered: std::collections::HashSet<&String> = entry.next.iter().collect();
         let mut kept = Vec::new();
         for h in &self.heads {
             if !covered.contains(&h.cid()?) {
                 kept.push(h.clone());
             }
         }
-        kept.push(entry.clone());
+        let entry_cid = entry.cid()?;
+        let already_head = kept
+            .iter()
+            .any(|h| h.cid().map(|c| c == entry_cid).unwrap_or(false));
+        if !already_head {
+            kept.push(entry);
+        }
         self.heads = kept;
-        Ok(entry)
+        Ok(())
     }
 }
