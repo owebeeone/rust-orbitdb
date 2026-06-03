@@ -2,7 +2,7 @@
 # (fixtures, testkit, core, ...). See GLP-0003 plan in the parent glial-dev repo.
 [workspace]
 resolver = "2"
-members = []
+members = ["crates/rust-orbitdb-core"]
 
 [workspace.package]
 edition = "2021"
