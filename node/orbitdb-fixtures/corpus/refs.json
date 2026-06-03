@@ -1,0 +1,236 @@
+[
+  {
+    "description": "log/refs: 6 appends, referencesCount 2",
+    "logId": "log-refs",
+    "key": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+    "identityHash": "zdpuAwt3ATk7Gooo7dgdbL1VAPffDPtowjdCRwrmMBzXzQLhr",
+    "innerPrivateKeyHex": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+    "referencesCount": 2,
+    "steps": [
+      {
+        "payload": "a",
+        "cid": "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk",
+        "next": [],
+        "refs": [],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 1
+        }
+      },
+      {
+        "payload": "b",
+        "cid": "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw",
+        "next": [
+          "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk"
+        ],
+        "refs": [],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 2
+        }
+      },
+      {
+        "payload": "c",
+        "cid": "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun",
+        "next": [
+          "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw"
+        ],
+        "refs": [
+          "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk"
+        ],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 3
+        }
+      },
+      {
+        "payload": "d",
+        "cid": "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM",
+        "next": [
+          "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun"
+        ],
+        "refs": [
+          "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw",
+          "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk"
+        ],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 4
+        }
+      },
+      {
+        "payload": "e",
+        "cid": "zdpuAm6tNNMdmXpDhXF71kqyhpZNmULkY6THgyxRMkpMhWUNt",
+        "next": [
+          "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM"
+        ],
+        "refs": [
+          "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun",
+          "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw"
+        ],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 5
+        }
+      },
+      {
+        "payload": "f",
+        "cid": "zdpuB2UX5Uy3T4KsbBQ14354EsX9Sgnivx8mzY1mAt1UpAfta",
+        "next": [
+          "zdpuAm6tNNMdmXpDhXF71kqyhpZNmULkY6THgyxRMkpMhWUNt"
+        ],
+        "refs": [
+          "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM",
+          "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun"
+        ],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 6
+        }
+      }
+    ],
+    "values": [
+      "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk",
+      "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw",
+      "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun",
+      "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM",
+      "zdpuAm6tNNMdmXpDhXF71kqyhpZNmULkY6THgyxRMkpMhWUNt",
+      "zdpuB2UX5Uy3T4KsbBQ14354EsX9Sgnivx8mzY1mAt1UpAfta"
+    ],
+    "traverseOrder": [
+      "zdpuB2UX5Uy3T4KsbBQ14354EsX9Sgnivx8mzY1mAt1UpAfta",
+      "zdpuAm6tNNMdmXpDhXF71kqyhpZNmULkY6THgyxRMkpMhWUNt",
+      "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM",
+      "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun",
+      "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw",
+      "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk"
+    ]
+  },
+  {
+    "description": "log/refs: 7 appends, referencesCount 3",
+    "logId": "log-refs",
+    "key": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+    "identityHash": "zdpuAwt3ATk7Gooo7dgdbL1VAPffDPtowjdCRwrmMBzXzQLhr",
+    "innerPrivateKeyHex": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+    "referencesCount": 3,
+    "steps": [
+      {
+        "payload": "a",
+        "cid": "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk",
+        "next": [],
+        "refs": [],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 1
+        }
+      },
+      {
+        "payload": "b",
+        "cid": "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw",
+        "next": [
+          "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk"
+        ],
+        "refs": [],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 2
+        }
+      },
+      {
+        "payload": "c",
+        "cid": "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun",
+        "next": [
+          "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw"
+        ],
+        "refs": [
+          "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk"
+        ],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 3
+        }
+      },
+      {
+        "payload": "d",
+        "cid": "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM",
+        "next": [
+          "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun"
+        ],
+        "refs": [
+          "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw",
+          "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk"
+        ],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 4
+        }
+      },
+      {
+        "payload": "e",
+        "cid": "zdpuAwcJLkeWF921LKmJFNJBhBEKu5m8v2PZ6yhwZbP1WPaAm",
+        "next": [
+          "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM"
+        ],
+        "refs": [
+          "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun",
+          "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw",
+          "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk"
+        ],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 5
+        }
+      },
+      {
+        "payload": "f",
+        "cid": "zdpuAo9L9dq9a89guSwtF1xMkDbYrB18sHWE6zmkWPMb2MRq1",
+        "next": [
+          "zdpuAwcJLkeWF921LKmJFNJBhBEKu5m8v2PZ6yhwZbP1WPaAm"
+        ],
+        "refs": [
+          "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM",
+          "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun",
+          "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw"
+        ],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 6
+        }
+      },
+      {
+        "payload": "g",
+        "cid": "zdpuAtSJCFXT8hoguonj38GRWTDfo5aszkxFCh89RjhT45ayo",
+        "next": [
+          "zdpuAo9L9dq9a89guSwtF1xMkDbYrB18sHWE6zmkWPMb2MRq1"
+        ],
+        "refs": [
+          "zdpuAwcJLkeWF921LKmJFNJBhBEKu5m8v2PZ6yhwZbP1WPaAm",
+          "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM",
+          "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun"
+        ],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 7
+        }
+      }
+    ],
+    "values": [
+      "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk",
+      "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw",
+      "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun",
+      "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM",
+      "zdpuAwcJLkeWF921LKmJFNJBhBEKu5m8v2PZ6yhwZbP1WPaAm",
+      "zdpuAo9L9dq9a89guSwtF1xMkDbYrB18sHWE6zmkWPMb2MRq1",
+      "zdpuAtSJCFXT8hoguonj38GRWTDfo5aszkxFCh89RjhT45ayo"
+    ],
+    "traverseOrder": [
+      "zdpuAtSJCFXT8hoguonj38GRWTDfo5aszkxFCh89RjhT45ayo",
+      "zdpuAo9L9dq9a89guSwtF1xMkDbYrB18sHWE6zmkWPMb2MRq1",
+      "zdpuAwcJLkeWF921LKmJFNJBhBEKu5m8v2PZ6yhwZbP1WPaAm",
+      "zdpuAqCgJmqaxkCeJFmCmMRFjMkge8nRRB95KdEwPtsrPULUM",
+      "zdpuAnZBa423jKyphSgfzh24XJGXskVqaJtCmmZayEgz4aTun",
+      "zdpuAxYySwC1DFHHcrK4APPKK53nepAqgaygfd9rY54xU1Thw",
+      "zdpuB25jXchf5jaCDYLr7GtDmFMZDhBFEwsDkmJUFdNLWwjzk"
+    ]
+  }
+]

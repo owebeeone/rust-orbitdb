@@ -184,11 +184,45 @@ async function makeJoin(description) {
 
 const joins = [await makeJoin('join/concurrent: A and B diverge, A joins B, then converge')]
 
+// Refs / traverse oracle: a chain appended with referencesCount, recording each
+// entry's skip-refs, plus the full traverse order (descending) and values
+// order (ascending).
+async function makeRefsLog(description, payloads, referencesCount) {
+  const log = await Log(A.identity, { logId: 'log-refs' })
+  const steps = []
+  for (const payload of payloads) {
+    const e = await log.append(payload, { referencesCount })
+    steps.push({ payload, cid: e.hash, next: e.next, refs: e.refs, clock: e.clock })
+  }
+  const values = (await log.values()).map((e) => e.hash)
+  const traverseOrder = []
+  for await (const e of log.traverse()) {
+    traverseOrder.push(e.hash)
+  }
+  return {
+    description,
+    logId: 'log-refs',
+    key: A.identity.publicKey,
+    identityHash: A.identity.hash,
+    innerPrivateKeyHex: A.innerHex,
+    referencesCount,
+    steps,
+    values,
+    traverseOrder,
+  }
+}
+
+const refsLogs = [
+  await makeRefsLog('log/refs: 6 appends, referencesCount 2', ['a', 'b', 'c', 'd', 'e', 'f'], 2),
+  await makeRefsLog('log/refs: 7 appends, referencesCount 3', ['a', 'b', 'c', 'd', 'e', 'f', 'g'], 3),
+]
+
 const outDir = new URL('./corpus/', import.meta.url)
 writeFileSync(new URL('entries.json', outDir), JSON.stringify(cases, null, 2) + '\n')
 writeFileSync(new URL('clocks.json', outDir), JSON.stringify(clocks, null, 2) + '\n')
 writeFileSync(new URL('logs.json', outDir), JSON.stringify(logs, null, 2) + '\n')
 writeFileSync(new URL('joins.json', outDir), JSON.stringify(joins, null, 2) + '\n')
+writeFileSync(new URL('refs.json', outDir), JSON.stringify(refsLogs, null, 2) + '\n')
 console.error(
-  `wrote ${cases.length} entry cases, ${clocks.length} clock cases, ${logs.length} logs, ${joins.length} joins`
+  `wrote ${cases.length} entries, ${clocks.length} clocks, ${logs.length} logs, ${joins.length} joins, ${refsLogs.length} refs`
 )

@@ -175,16 +175,17 @@ where
     }
 }
 
-/// An append-only oplog: holds the current heads and appends signed entries
-/// matching `@orbitdb/core` `Log.append` for the linear case (referencesCount
-/// 0, so `refs` stays empty). sans-io: the signing key is supplied by the
-/// caller; identity hashing is treated as a constant for a fixed identity.
+/// An append-only oplog: holds all known entries and the current heads, and
+/// appends signed entries matching `@orbitdb/core` `Log.append`. sans-io: the
+/// signing key is supplied by the caller; identity hashing is treated as a
+/// constant for a fixed identity.
 pub struct Log {
     pub id: String,
     public_key: String,
     identity_hash: String,
     signing_key: Vec<u8>,
     heads: Vec<Entry>,
+    entries: std::collections::HashMap<String, Entry>,
 }
 
 impl Log {
@@ -201,6 +202,7 @@ impl Log {
             identity_hash: identity_hash.into(),
             signing_key,
             heads: Vec::new(),
+            entries: std::collections::HashMap::new(),
         }
     }
 
@@ -213,18 +215,35 @@ impl Log {
         hs.iter().map(Entry::cid).collect()
     }
 
-    /// Appends a new entry: `next` = current heads, clock = max head time + 1,
-    /// signs the entry, and replaces the heads it covers. Returns the entry.
+    /// Appends a new entry with `referencesCount` 0 (no skip-refs).
     pub fn append(&mut self, payload: Ipld) -> Result<Entry, EntryError> {
-        let next = self.head_cids()?;
+        self.append_with_refs(payload, 0)
+    }
+
+    /// Appends a new entry: `next` = current heads, clock = max head time + 1,
+    /// `refs` = skip-pointers from `getReferences`, signs, and replaces covered
+    /// heads. Returns the entry.
+    pub fn append_with_refs(
+        &mut self,
+        payload: Ipld,
+        references_count: usize,
+    ) -> Result<Entry, EntryError> {
+        let mut heads_desc = self.heads.clone();
+        heads_desc.sort_by(last_write_wins);
+        heads_desc.reverse();
+        let next: Vec<String> = heads_desc
+            .iter()
+            .map(Entry::cid)
+            .collect::<Result<_, _>>()?;
+        let refs = self.get_references(&heads_desc, references_count + heads_desc.len())?;
         let max_time = self.heads.iter().map(|e| e.clock.time).max().unwrap_or(0);
         let mut entry = Entry {
             v: 2,
             id: self.id.clone(),
             key: self.public_key.clone(),
             sig: String::new(),
-            next: next.clone(),
-            refs: Vec::new(),
+            next,
+            refs,
             clock: Clock {
                 id: self.public_key.clone(),
                 time: max_time + 1,
@@ -240,9 +259,8 @@ impl Log {
 
     /// Joins a single entry produced elsewhere (a concurrent writer): verifies
     /// its signature, then merges it into the heads. Concurrent entries that do
-    /// not cover each other both remain heads. Note: this assumes the entry's
-    /// causal dependencies are already present (shallow join); deep history
-    /// traversal arrives with refs/traverse.
+    /// not cover each other both remain heads. Assumes the entry's causal
+    /// dependencies are already present (shallow join).
     pub fn join_entry(&mut self, entry: Entry) -> Result<(), EntryError> {
         if !entry.verify_signature()? {
             return Err(EntryError::Signature);
@@ -250,9 +268,92 @@ impl Log {
         self.add_head(entry)
     }
 
-    /// Head-set update shared by append and join: drop heads covered by the
-    /// entry's `next`, then add the entry if not already a head.
+    /// All entries oldest-first (ascending) — `@orbitdb/core` `values()`.
+    pub fn values(&self) -> Result<Vec<Entry>, EntryError> {
+        let mut v = self.traverse(&self.heads, None)?;
+        v.reverse();
+        Ok(v)
+    }
+
+    /// Traverse the DAG from `roots` following `next`, yielding entries in
+    /// descending conflict order. Faithful port of `@orbitdb/core` `traverse`;
+    /// `stop_after` mirrors a count-based `shouldStopFn` (stop once that many
+    /// entries have been yielded).
+    pub fn traverse(
+        &self,
+        roots: &[Entry],
+        stop_after: Option<usize>,
+    ) -> Result<Vec<Entry>, EntryError> {
+        use std::collections::HashSet;
+        let mut stack = roots.to_vec();
+        let mut traversed: HashSet<String> = HashSet::new();
+        let mut fetched: HashSet<String> = HashSet::new();
+        let mut to_fetch: Vec<String> = Vec::new();
+        let mut yielded: Vec<Entry> = Vec::new();
+        while !stack.is_empty() {
+            stack.sort_by(last_write_wins);
+            let entry = stack.pop().unwrap();
+            let hash = entry.cid()?;
+            if traversed.contains(&hash) {
+                continue;
+            }
+            yielded.push(entry.clone());
+            if let Some(n) = stop_after {
+                if yielded.len() >= n {
+                    break;
+                }
+            }
+            traversed.insert(hash.clone());
+            fetched.insert(hash.clone());
+            for n in &entry.next {
+                to_fetch.push(n.clone());
+            }
+            to_fetch.retain(|h| !traversed.contains(h) && !fetched.contains(h));
+            let mut nexts: Vec<Entry> = Vec::new();
+            for h in &to_fetch {
+                if !traversed.contains(h) && !fetched.contains(h) {
+                    fetched.insert(h.clone());
+                    if let Some(e) = self.entries.get(h) {
+                        nexts.push(e.clone());
+                    }
+                }
+            }
+            let mut next_to_fetch: Vec<String> = Vec::new();
+            let mut seen: HashSet<String> = HashSet::new();
+            for e in &nexts {
+                for n in &e.next {
+                    if seen.insert(n.clone()) {
+                        next_to_fetch.push(n.clone());
+                    }
+                }
+            }
+            next_to_fetch.retain(|h| !traversed.contains(h) && !fetched.contains(h));
+            to_fetch = next_to_fetch;
+            let mut new_stack = nexts;
+            new_stack.append(&mut stack);
+            stack = new_stack;
+        }
+        Ok(yielded)
+    }
+
+    /// Skip-references for a new entry — port of `@orbitdb/core` `getReferences`.
+    fn get_references(&self, heads: &[Entry], amount: usize) -> Result<Vec<String>, EntryError> {
+        let yielded = self.traverse(heads, Some(amount))?;
+        let refs: Vec<String> = yielded.iter().map(Entry::cid).collect::<Result<_, _>>()?;
+        let start = heads.len();
+        let end = amount.min(refs.len());
+        Ok(if start < end {
+            refs[start..end].to_vec()
+        } else {
+            Vec::new()
+        })
+    }
+
+    /// Head-set update shared by append and join: store the entry, drop heads
+    /// covered by its `next`, then add it if not already a head.
     fn add_head(&mut self, entry: Entry) -> Result<(), EntryError> {
+        let entry_cid = entry.cid()?;
+        self.entries.insert(entry_cid.clone(), entry.clone());
         let covered: std::collections::HashSet<&String> = entry.next.iter().collect();
         let mut kept = Vec::new();
         for h in &self.heads {
@@ -260,7 +361,6 @@ impl Log {
                 kept.push(h.clone());
             }
         }
-        let entry_cid = entry.cid()?;
         let already_head = kept
             .iter()
             .any(|h| h.cid().map(|c| c == entry_cid).unwrap_or(false));
