@@ -1,0 +1,74 @@
+[
+  {
+    "description": "identical clock -> 0",
+    "a": {
+      "id": "aaa",
+      "time": 5
+    },
+    "b": {
+      "id": "aaa",
+      "time": 5
+    },
+    "cmp": 0
+  },
+  {
+    "description": "same time, a.id < b.id -> -1",
+    "a": {
+      "id": "aaa",
+      "time": 5
+    },
+    "b": {
+      "id": "bbb",
+      "time": 5
+    },
+    "cmp": -1
+  },
+  {
+    "description": "same time, a.id > b.id -> 1",
+    "a": {
+      "id": "bbb",
+      "time": 5
+    },
+    "b": {
+      "id": "aaa",
+      "time": 5
+    },
+    "cmp": 1
+  },
+  {
+    "description": "a.time < b.time -> -1",
+    "a": {
+      "id": "aaa",
+      "time": 5
+    },
+    "b": {
+      "id": "aaa",
+      "time": 7
+    },
+    "cmp": -1
+  },
+  {
+    "description": "time dominates id -> 1",
+    "a": {
+      "id": "aaa",
+      "time": 9
+    },
+    "b": {
+      "id": "zzz",
+      "time": 2
+    },
+    "cmp": 1
+  },
+  {
+    "description": "time 0 vs 1 -> -1",
+    "a": {
+      "id": "m",
+      "time": 0
+    },
+    "b": {
+      "id": "m",
+      "time": 1
+    },
+    "cmp": -1
+  }
+]

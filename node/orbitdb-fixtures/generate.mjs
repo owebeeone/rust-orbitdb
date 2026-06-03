@@ -2,8 +2,9 @@
 // Deep-imports the oplog/identity layer from @orbitdb/core@4.0.0 to avoid the
 // IPFS storage tier. Signatures are secp256k1 ECDSA (RFC6979 -> deterministic).
 // Emits an array of conformance cases to stdout.
+import { writeFileSync } from 'node:fs'
 import Entry from '@orbitdb/core/src/oplog/entry.js'
-import Clock from '@orbitdb/core/src/oplog/clock.js'
+import Clock, { compareClocks } from '@orbitdb/core/src/oplog/clock.js'
 import Identities from '@orbitdb/core/src/identities/identities.js'
 import KeyStore from '@orbitdb/core/src/key-store.js'
 import MemoryStorage from '@orbitdb/core/src/storage/memory.js'
@@ -81,4 +82,23 @@ const cases = [
   await makeCase('entry/clock-time: multi-byte clock time (>23)', 'tick', { time: 42 }),
 ]
 
-console.log(JSON.stringify(cases, null, 2))
+// Clock comparison oracle: cmp is sign(compareClocks(a, b)) in {-1, 0, 1}.
+const clockPair = (a, b, description) => ({
+  description,
+  a,
+  b,
+  cmp: Math.sign(compareClocks(a, b)),
+})
+const clocks = [
+  clockPair({ id: 'aaa', time: 5 }, { id: 'aaa', time: 5 }, 'identical clock -> 0'),
+  clockPair({ id: 'aaa', time: 5 }, { id: 'bbb', time: 5 }, 'same time, a.id < b.id -> -1'),
+  clockPair({ id: 'bbb', time: 5 }, { id: 'aaa', time: 5 }, 'same time, a.id > b.id -> 1'),
+  clockPair({ id: 'aaa', time: 5 }, { id: 'aaa', time: 7 }, 'a.time < b.time -> -1'),
+  clockPair({ id: 'aaa', time: 9 }, { id: 'zzz', time: 2 }, 'time dominates id -> 1'),
+  clockPair({ id: 'm', time: 0 }, { id: 'm', time: 1 }, 'time 0 vs 1 -> -1'),
+]
+
+const outDir = new URL('./corpus/', import.meta.url)
+writeFileSync(new URL('entries.json', outDir), JSON.stringify(cases, null, 2) + '\n')
+writeFileSync(new URL('clocks.json', outDir), JSON.stringify(clocks, null, 2) + '\n')
+console.error(`wrote ${cases.length} entry cases, ${clocks.length} clock cases`)

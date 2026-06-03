@@ -12,6 +12,7 @@ use k256::ecdsa::{Signature, VerifyingKey};
 use multihash::Multihash;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
+use std::cmp::Ordering;
 
 /// dag-cbor codec code.
 const DAG_CBOR: u64 = 0x71;
@@ -125,4 +126,42 @@ pub fn verify_secp256k1(
     let vk = VerifyingKey::from_sec1_bytes(&pk_bytes).map_err(|_| EntryError::PublicKey)?;
     let sig = Signature::from_der(&sig_bytes).map_err(|_| EntryError::Signature)?;
     Ok(vk.verify(message, &sig).is_ok())
+}
+
+/// Compares two clocks the way `@orbitdb/core` `compareClocks` does: primary by
+/// `time`, secondary by `id` (bytewise). Returns [`Ordering::Equal`] only when
+/// both clocks are identical. Ids are ASCII hex in OrbitDB, so bytewise order
+/// matches JS string order.
+pub fn compare_clocks(a: &Clock, b: &Clock) -> Ordering {
+    a.time.cmp(&b.time).then_with(|| a.id.cmp(&b.id))
+}
+
+/// Returned when a conflict comparator yields [`Ordering::Equal`] for two
+/// distinct entries — OrbitDB's `NoZeroes` guard throws in this case, because
+/// the log requires a strict total order over distinct entries.
+#[derive(Debug, thiserror::Error)]
+#[error("conflict tiebreaker returned zero for distinct entries")]
+pub struct NoZeroError;
+
+/// Last-Write-Wins entry ordering, matching `@orbitdb/core`: order by clock
+/// (time then id); if the clocks are identical, the ultimate tiebreak takes the
+/// first (left) entry, so `a` is treated as the winner. Never returns
+/// [`Ordering::Equal`].
+pub fn last_write_wins(a: &Entry, b: &Entry) -> Ordering {
+    match compare_clocks(&a.clock, &b.clock) {
+        Ordering::Equal => Ordering::Greater,
+        ord => ord,
+    }
+}
+
+/// Wraps a conflict comparator with OrbitDB's `NoZeroes` invariant: a zero
+/// (Equal) result for distinct entries is an error, not a silent tie.
+pub fn no_zeroes<F>(cmp: F, a: &Entry, b: &Entry) -> Result<Ordering, NoZeroError>
+where
+    F: Fn(&Entry, &Entry) -> Ordering,
+{
+    match cmp(a, b) {
+        Ordering::Equal => Err(NoZeroError),
+        ord => Ok(ord),
+    }
 }
