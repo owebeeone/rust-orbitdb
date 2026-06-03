@@ -7,7 +7,8 @@
       "identityId": "userA",
       "time": 0,
       "next": [],
-      "refs": []
+      "refs": [],
+      "innerPrivateKeyHex": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
     },
     "expected": {
       "v": 2,
@@ -41,7 +42,8 @@
       "identityId": "userA",
       "time": 0,
       "next": [],
-      "refs": []
+      "refs": [],
+      "innerPrivateKeyHex": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
     },
     "expected": {
       "v": 2,
@@ -79,7 +81,8 @@
       ],
       "refs": [
         "zdpuAt9Tt4v1jNnrmQTXitzfrjw9KMm9bDKZBQ4AnntCCAEVu"
-      ]
+      ],
+      "innerPrivateKeyHex": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
     },
     "expected": {
       "v": 2,
@@ -110,7 +113,8 @@
       "identityId": "userA",
       "time": 42,
       "next": [],
-      "refs": []
+      "refs": [],
+      "innerPrivateKeyHex": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
     },
     "expected": {
       "v": 2,

@@ -97,6 +97,22 @@ fn cid_matches_orbitdb_hash() {
 }
 
 #[test]
+fn signing_reproduces_orbitdb_signatures() {
+    use rust_orbitdb_core::sign_secp256k1;
+    for case in corpus() {
+        let desc = case["description"].as_str().unwrap();
+        let key = hex::decode(case["input"]["innerPrivateKeyHex"].as_str().unwrap()).unwrap();
+        let signed = hex::decode(case["expected"]["signedBytesHex"].as_str().unwrap()).unwrap();
+        let got = sign_secp256k1(&key, &signed).unwrap();
+        assert_eq!(
+            got,
+            case["expected"]["sig"].as_str().unwrap(),
+            "sig mismatch: {desc}"
+        );
+    }
+}
+
+#[test]
 fn signatures_verify() {
     for case in corpus() {
         let desc = case["description"].as_str().unwrap();

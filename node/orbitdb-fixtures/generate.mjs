@@ -4,6 +4,7 @@
 // Emits an array of conformance cases to stdout.
 import { writeFileSync } from 'node:fs'
 import Entry from '@orbitdb/core/src/oplog/entry.js'
+import Log from '@orbitdb/core/src/oplog/log.js'
 import Clock, { compareClocks } from '@orbitdb/core/src/oplog/clock.js'
 import Identities from '@orbitdb/core/src/identities/identities.js'
 import KeyStore from '@orbitdb/core/src/key-store.js'
@@ -45,7 +46,15 @@ async function makeCase(description, payload, { time = 0, next = [], refs = [] }
 
   return {
     description,
-    input: { logId, payload, identityId: id, time, next, refs },
+    input: {
+      logId,
+      payload,
+      identityId: id,
+      time,
+      next,
+      refs,
+      innerPrivateKeyHex: u8ToString(fixedPrivInner, 'hex'),
+    },
     expected: {
       v: entry.v,
       payload: entry.payload,
@@ -98,7 +107,39 @@ const clocks = [
   clockPair({ id: 'm', time: 0 }, { id: 'm', time: 1 }, 'time 0 vs 1 -> -1'),
 ]
 
+// Log append oracle: append a sequence and record each entry's structure and
+// the heads after each step. referencesCount defaults to 0, so refs stay empty
+// (linear chain). Rust must reproduce next/refs/clock/cid and heads.
+async function makeLog(description, payloads) {
+  const log = await Log(identity, { logId: 'log-seq' })
+  const steps = []
+  for (const payload of payloads) {
+    const e = await log.append(payload)
+    const heads = await log.heads()
+    steps.push({
+      payload,
+      cid: e.hash,
+      next: e.next,
+      refs: e.refs,
+      clock: e.clock,
+      headsAfter: heads.map((h) => h.hash),
+    })
+  }
+  return {
+    description,
+    logId: 'log-seq',
+    identityId: id,
+    key: identity.publicKey,
+    identityHash: identity.hash,
+    innerPrivateKeyHex: u8ToString(fixedPrivInner, 'hex'),
+    steps,
+  }
+}
+
+const logs = [await makeLog('log/linear-append: a,b,c,d', ['a', 'b', 'c', 'd'])]
+
 const outDir = new URL('./corpus/', import.meta.url)
 writeFileSync(new URL('entries.json', outDir), JSON.stringify(cases, null, 2) + '\n')
 writeFileSync(new URL('clocks.json', outDir), JSON.stringify(clocks, null, 2) + '\n')
-console.error(`wrote ${cases.length} entry cases, ${clocks.length} clock cases`)
+writeFileSync(new URL('logs.json', outDir), JSON.stringify(logs, null, 2) + '\n')
+console.error(`wrote ${cases.length} entry cases, ${clocks.length} clock cases, ${logs.length} logs`)

@@ -7,8 +7,8 @@
 use cid::multibase::Base;
 use cid::Cid;
 use ipld_core::ipld::Ipld;
-use k256::ecdsa::signature::Verifier;
-use k256::ecdsa::{Signature, VerifyingKey};
+use k256::ecdsa::signature::{Signer, Verifier};
+use k256::ecdsa::{Signature, SigningKey, VerifyingKey};
 use multihash::Multihash;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -113,6 +113,15 @@ pub fn cid_of(bytes: &[u8]) -> Result<String, EntryError> {
         .map_err(|_| EntryError::Multihash)
 }
 
+/// Signs `message` with a 32-byte secp256k1 private scalar, producing a
+/// DER-encoded ECDSA signature (hex), hashing with sha256 and using RFC6979
+/// deterministic nonces — matching `@libp2p/crypto` / `@noble/secp256k1`.
+pub fn sign_secp256k1(private_key: &[u8], message: &[u8]) -> Result<String, EntryError> {
+    let sk = SigningKey::from_slice(private_key).map_err(|_| EntryError::PublicKey)?;
+    let sig: Signature = sk.sign(message);
+    Ok(hex::encode(sig.to_der()))
+}
+
 /// Verifies a secp256k1 ECDSA signature (DER hex) over `message`, hashing with
 /// sha256, against a compressed-SEC1 public key (hex). Matches
 /// `@libp2p/crypto` secp256k1 signing.
@@ -163,5 +172,79 @@ where
     match cmp(a, b) {
         Ordering::Equal => Err(NoZeroError),
         ord => Ok(ord),
+    }
+}
+
+/// An append-only oplog: holds the current heads and appends signed entries
+/// matching `@orbitdb/core` `Log.append` for the linear case (referencesCount
+/// 0, so `refs` stays empty). sans-io: the signing key is supplied by the
+/// caller; identity hashing is treated as a constant for a fixed identity.
+pub struct Log {
+    pub id: String,
+    public_key: String,
+    identity_hash: String,
+    signing_key: Vec<u8>,
+    heads: Vec<Entry>,
+}
+
+impl Log {
+    /// Creates an empty log for a fixed identity.
+    pub fn new(
+        id: impl Into<String>,
+        public_key: impl Into<String>,
+        identity_hash: impl Into<String>,
+        signing_key: Vec<u8>,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            public_key: public_key.into(),
+            identity_hash: identity_hash.into(),
+            signing_key,
+            heads: Vec::new(),
+        }
+    }
+
+    /// Current heads as CIDs, sorted descending by LWW (latest first) — the
+    /// order `@orbitdb/core` `heads()` returns and uses for `next` pointers.
+    pub fn head_cids(&self) -> Result<Vec<String>, EntryError> {
+        let mut hs = self.heads.clone();
+        hs.sort_by(last_write_wins);
+        hs.reverse();
+        hs.iter().map(Entry::cid).collect()
+    }
+
+    /// Appends a new entry: `next` = current heads, clock = max head time + 1,
+    /// signs the entry, and replaces the heads it covers. Returns the entry.
+    pub fn append(&mut self, payload: Ipld) -> Result<Entry, EntryError> {
+        let next = self.head_cids()?;
+        let max_time = self.heads.iter().map(|e| e.clock.time).max().unwrap_or(0);
+        let mut entry = Entry {
+            v: 2,
+            id: self.id.clone(),
+            key: self.public_key.clone(),
+            sig: String::new(),
+            next: next.clone(),
+            refs: Vec::new(),
+            clock: Clock {
+                id: self.public_key.clone(),
+                time: max_time + 1,
+            },
+            payload,
+            identity: self.identity_hash.clone(),
+        };
+        let signed = entry.signed_bytes()?;
+        entry.sig = sign_secp256k1(&self.signing_key, &signed)?;
+
+        // New heads = entries not covered by `next`, plus the new entry.
+        let covered: std::collections::HashSet<&String> = next.iter().collect();
+        let mut kept = Vec::new();
+        for h in &self.heads {
+            if !covered.contains(&h.cid()?) {
+                kept.push(h.clone());
+            }
+        }
+        kept.push(entry.clone());
+        self.heads = kept;
+        Ok(entry)
     }
 }

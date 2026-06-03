@@ -1,0 +1,70 @@
+[
+  {
+    "description": "log/linear-append: a,b,c,d",
+    "logId": "log-seq",
+    "identityId": "userA",
+    "key": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+    "identityHash": "zdpuAwt3ATk7Gooo7dgdbL1VAPffDPtowjdCRwrmMBzXzQLhr",
+    "innerPrivateKeyHex": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+    "steps": [
+      {
+        "payload": "a",
+        "cid": "zdpuAqXRJgNKuZGsMnXAKcctTWraGsu9z8tYEKky2SSQpcBvf",
+        "next": [],
+        "refs": [],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 1
+        },
+        "headsAfter": [
+          "zdpuAqXRJgNKuZGsMnXAKcctTWraGsu9z8tYEKky2SSQpcBvf"
+        ]
+      },
+      {
+        "payload": "b",
+        "cid": "zdpuAvK2GNEnaBhJUSA8BsoFaSWjRL3Mv9RuJ6d6Q42u9rCU9",
+        "next": [
+          "zdpuAqXRJgNKuZGsMnXAKcctTWraGsu9z8tYEKky2SSQpcBvf"
+        ],
+        "refs": [],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 2
+        },
+        "headsAfter": [
+          "zdpuAvK2GNEnaBhJUSA8BsoFaSWjRL3Mv9RuJ6d6Q42u9rCU9"
+        ]
+      },
+      {
+        "payload": "c",
+        "cid": "zdpuAs8SXwXsZgKNnYWfnKsiSJHM4r2LhS3JdXBtbACNY5JMn",
+        "next": [
+          "zdpuAvK2GNEnaBhJUSA8BsoFaSWjRL3Mv9RuJ6d6Q42u9rCU9"
+        ],
+        "refs": [],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 3
+        },
+        "headsAfter": [
+          "zdpuAs8SXwXsZgKNnYWfnKsiSJHM4r2LhS3JdXBtbACNY5JMn"
+        ]
+      },
+      {
+        "payload": "d",
+        "cid": "zdpuAwiQXbHF7jBzXS7rjMWyr6xrZCkWiC3X5shuqjV84GhW3",
+        "next": [
+          "zdpuAs8SXwXsZgKNnYWfnKsiSJHM4r2LhS3JdXBtbACNY5JMn"
+        ],
+        "refs": [],
+        "clock": {
+          "id": "0288e2ddeb04657dbd0edadf9c1f98da3b3895faa1f00527934dd35d17542ffe9b",
+          "time": 4
+        },
+        "headsAfter": [
+          "zdpuAwiQXbHF7jBzXS7rjMWyr6xrZCkWiC3X5shuqjV84GhW3"
+        ]
+      }
+    ]
+  }
+]
